@@ -4,7 +4,6 @@ import time
 import re
 import datetime
 from calendar import monthrange
-from selenium import webdriver
 from PIL import Image, ImageFont, ImageDraw
 from finnhub import client as Finnhub # api docs: https://finnhub.io/docs/api
 import requests
