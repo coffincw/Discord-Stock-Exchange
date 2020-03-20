@@ -7,6 +7,7 @@ from discord import Game
 from discord.ext.commands import Bot
 import asyncio
 import stocks
+import charts
 import os
 import time
 
@@ -68,24 +69,26 @@ def get_top_10(data):
 ## vvv STOCK COMMANDS vvv
 
 @client.command(name='stockcandle')
-async def stock_candle(ctx, ticker, timeframe):
-    if len(ticker) == 0 or len(timeframe) == 0:
-        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.  Do: $stockcandle ticker d|m|6m|y|ytd|5y|max", color=discord.Color.red()))
+async def stock_candle(ctx, *args):
+    if len(args) < 2:
+        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %stockcandle ticker timeframe", color=discord.Color.red()))
         return
-
-    await stocks.chart(ctx, ticker, timeframe, 'candle')
+    await charts.chart(ctx, args[0], args[1], 'candle')
 
 @client.command(name='stockline')
-async def stock_line(ctx, ticker, timeframe):
-    if len(ticker) == 0 or len(timeframe) == 0:
-        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.  Do: $stockline ticker d|m|6m|y|ytd|5y|max", color=discord.Color.red()))
+async def stock_line(ctx, *args):
+    if len(args) < 2:
+        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %stockline ticker timeframe", color=discord.Color.red()))
         return
 
-    await stocks.chart(ctx, ticker, timeframe, 'line')
+    await charts.chart(ctx, args[0], args[1], 'line')
 
 @client.command(name='stock')
-async def stock_price(ctx, ticker):
-    await stocks.stock_price_today(ctx, ticker)
+async def stock_price(ctx, *args):
+    if len(args) < 1:
+        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %stock ticker", color=discord.Color.red()))
+        return
+    await stocks.stock_price_today(ctx, args[0])
 
 
 client.run(BOT_TOKEN)
