@@ -13,7 +13,9 @@ import stocks
 import pandas as pd
 
 FINNHUB_API_TOKEN_2 = os.environ.get('FINNHUB_API_TOKEN_2')
+FINNHUB_API_TOKEN_3 = os.environ.get('FINNHUB_API_TOKEN_3')
 finnhub_chart_client = Finnhub.Client(api_key=FINNHUB_API_TOKEN_2)
+finnhub_other_crypto_client = Finnhub.Client(api_key=FINNHUB_API_TOKEN_3)
 
 
 async def chart(ctx, ticker, timeframe, chart_type):
@@ -110,7 +112,7 @@ def get_crypto_candle_data(ticker, to_time, from_time, res):
     # Iterate through remaining exchanges
     crypto_exchanges = finnhub_chart_client.crypto_exchange()
     for exchange in [i for i in crypto_exchanges if i not in ['Binance', 'COINBASE']]:
-        candle_crypto = finnhub_chart_client.crypto_candle(symbol = exchange + ':'+ ticker, resolution=res, **{'from':str(from_time), 'to': str(to_time)})
+        candle_crypto = finnhub_other_crypto_client.crypto_candle(symbol = exchange + ':'+ ticker, resolution=res, **{'from':str(from_time), 'to': str(to_time)})
         status = candle_crypto['s']
         if status == 'ok':
             return candle_crypto 
@@ -520,6 +522,8 @@ def get_candle_data(ticker, res, days):
     today = datetime.datetime.now()
     from_time = get_from_time(days)
     current_time = int(datetime.datetime.now().timestamp())
+    print(from_time)
+    print(current_time)
     candle = finnhub_chart_client.stock_candle(symbol=ticker, resolution=res, **{'from':str(from_time), 'to': str(current_time)})
     status = candle['s']
     is_not_crypto = True
