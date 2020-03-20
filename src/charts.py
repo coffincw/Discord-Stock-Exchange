@@ -109,7 +109,7 @@ def get_crypto_candle_data(ticker, to_time, from_time, res):
     
     # Iterate through remaining exchanges
     crypto_exchanges = finnhub_chart_client.crypto_exchange()
-    for exchange in crypto_exchanges:
+    for exchange in [i for i in crypto_exchanges if i not in ['Binance', 'COINBASE']]:
         candle_crypto = finnhub_chart_client.crypto_candle(symbol = exchange + ':'+ ticker, resolution=res, **{'from':str(from_time), 'to': str(to_time)})
         status = candle_crypto['s']
         if status == 'ok':
@@ -429,7 +429,6 @@ def line(ticker, days, quote):
     """
 
     df, dates, create_vert_line, start_price = create_dataframe(ticker, days, 1, quote['pc'])
-
     if quote['t'] == 0: #invalid ticker
         return '', -1
 
@@ -525,6 +524,7 @@ def get_candle_data(ticker, res, days):
     status = candle['s']
     is_not_crypto = True
     if status != 'ok':
+        print('not stock')
         if days == 1:
             prev = today-datetime.timedelta(days=1)
             from_time = int(prev.timestamp())
@@ -573,6 +573,8 @@ def create_dataframe(ticker, days, res, previous_close):
             res = 30
         stockdata, is_intraday_not_crypto = get_candle_data(ticker, res, days)
         status = stockdata['s']
+        print('stockdata')
+        print(stockdata)
         is_intraday_not_crypto = False # override function output
         if status != 'ok': # invalid ticker
             return None, None, False, -1
@@ -582,7 +584,7 @@ def create_dataframe(ticker, days, res, previous_close):
         is_intraday_not_crypto = False # override function output
         if status != 'ok': # invalid ticker
             return None, None, False, -1
-
+    
     # # reformat the stock date from [{date: 'x-x-x', open: x, high: x, etc}, {}, {}, ...] to {Date: ['x-x-x', 'x-x-x', ...], Open: [x, x, ...], ...}
     reformatted_stockdata = dict()
     
