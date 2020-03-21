@@ -3,7 +3,6 @@ import os
 import time
 import re
 import datetime
-from calendar import monthrange
 from PIL import Image, ImageFont, ImageDraw
 from finnhub import client as Finnhub # api docs: https://finnhub.io/docs/api
 import requests
@@ -39,15 +38,9 @@ async def chart(ctx, ticker, timeframe, chart_type):
     quote, dec = stocks.get_quote(ticker)
     current_price = quote['c']
 
-    # get current date
-    current_day = datetime.datetime.now()
-
-    # pull company info from finnhub client
-    company_info = finnhub_chart_client.company_profile(symbol=ticker)
-
-    # get the ipo date for the specified ticker
     try:
-        ipo_date = company_info['ipo'].split('-') # [year, month, day]
+        # pull company info from finnhub client
+        company_info = finnhub_chart_client.company_profile(symbol=ticker)
         company_name = company_info['name']
     except: # ticker doesn't exist
         company_name = ticker
@@ -262,7 +255,7 @@ def create_close_line(dates, close):
     data = dict()
     data['Date'] = dates
     data['Close'] = [close]
-    for i in range(len(dates)-1):
+    for _ in range(len(dates)-1):
         data['Close'].append(close)
 
     # Create the dataframe from dictionary
@@ -589,7 +582,6 @@ def create_dataframe(ticker, days, res, previous_close):
         if status != 'ok': # invalid ticker
             return None, None, False, -1
     
-    # # reformat the stock date from [{date: 'x-x-x', open: x, high: x, etc}, {}, {}, ...] to {Date: ['x-x-x', 'x-x-x', ...], Open: [x, x, ...], ...}
     reformatted_stockdata = dict()
     
     reformatted_stockdata['Date'] = []

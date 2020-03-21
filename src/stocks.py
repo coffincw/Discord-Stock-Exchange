@@ -1,15 +1,9 @@
 import discord
 import os
 import time
-import re
 import datetime
-from calendar import monthrange
-from PIL import Image, ImageFont, ImageDraw
 from finnhub import client as Finnhub # api docs: https://finnhub.io/docs/api
 import requests
-import matplotlib
-import mplfinance
-import pandas as pd
 
 FINNHUB_API_TOKEN = os.environ.get('FINNHUB_API_TOKEN')
 finnhub_client = Finnhub.Client(api_key=FINNHUB_API_TOKEN)
