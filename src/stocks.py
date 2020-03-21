@@ -1,4 +1,5 @@
 import discord
+import asyncio
 import os
 import time
 import datetime
@@ -12,7 +13,6 @@ finnhub_rs_client = Finnhub.Client(api_key=FINNHUB_RS_API_TOKEN)
 
 
 async def rs(ctx, ticker):
-    starttime = time.time()
     iterations = 0
     status, embed = await stock_price_today(ctx, ticker)
     if status != 'ok':
@@ -22,7 +22,7 @@ async def rs(ctx, ticker):
 
     while iterations < 5:
         print(message.id)
-        time.sleep(60.0 - ((time.time() - starttime) % 60.0))
+        await asyncio.sleep(60)
         status, embed = await stock_price_today(ctx, ticker)
         await message.edit(embed=embed)
         print('updated')
