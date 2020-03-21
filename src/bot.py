@@ -88,7 +88,16 @@ async def stock_price(ctx, *args):
     if len(args) < 1:
         await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %stock ticker", color=discord.Color.red()))
         return
-    await stocks.stock_price_today(ctx, args[0])
+    status, embed = await stocks.stock_price_today(ctx, args[0])
+    await ctx.send(embed=embed)
+
+
+@client.command(name='rs', aliases=['realtimestock', 'rstock'])
+async def realtimestock(ctx, *args):
+    if len(args) < 1:
+        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %rs ticker", color=discord.Color.red()))
+        return
+    await stocks.rs(ctx, args[0])
 
 
 client.run(BOT_TOKEN)
