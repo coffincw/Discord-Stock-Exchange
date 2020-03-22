@@ -9,12 +9,15 @@ Virtual stock exchange bot to use virtual currency in the real world market
 ## Commands
 - stock [ticker]
     - Display stock price, price change, percent change
+- rs [ticker]
+    - Displays the stock price, price change, percent change in real time (updates every minute for 5 minutes)
 - stockcandle [ticker timeframe]
     - Displays the stock's candle data over specified timeframe.  
       - Possible timeframes (multiples can be specified ex. 5D): D, W, M, Y, MAX
 - stockline [ticker timeframe]
     - Displays the stock\'s data in a line graph over specified timeframe.
       - Possible timeframes (multiples can be specified ex. 5D): D, W, M, Y, MAX
+
 
 ## How to contribute
 1. Fork repo

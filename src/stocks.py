@@ -1,4 +1,5 @@
 import discord
+import asyncio
 import os
 import time
 import datetime
@@ -6,11 +7,79 @@ from finnhub import client as Finnhub # api docs: https://finnhub.io/docs/api
 import requests
 
 FINNHUB_API_TOKEN = os.environ.get('FINNHUB_API_TOKEN')
+FINNHUB_RS_API_TOKEN = os.environ.get('FINNHUB_API_TOKEN_4')
 finnhub_client = Finnhub.Client(api_key=FINNHUB_API_TOKEN)
+finnhub_rs_client = Finnhub.Client(api_key=FINNHUB_RS_API_TOKEN)
+
+
+async def rs(ctx, ticker):
+    """Sends the stock_price_today() embedded 
+    message and updates it every minute for 5
+    minutes.
+
+    Parameters
+    ----------
+    ctx : discord.ext.commands.Context
+        context of the command
+    ticker : string
+        stock ticker (ex. AAPL, MSFT, TSLA, ^DJI, BTCUSDT)
+
+    """
+    status, embed = await stock_price_today(ctx, ticker, True)
+    message = await ctx.send(embed=embed)
+    if status != 'ok': # if not okay then don't edit
+            return
+    
+    iterations = 0
+    while iterations < 5:
+        await asyncio.sleep(60)
+        if iterations == 4: # last iteration
+            status, embed = await stock_price_today(ctx, ticker, False)
+        else:
+            status, embed = await stock_price_today(ctx, ticker, True)
+        await message.edit(embed=embed)
+        
+        iterations += 1
+
+async def stock_price_today(ctx, ticker, is_live):
+    """Called by stocK_price() in bot.py, returns
+    the current price, percent change, and price
+    change for the specified ticker
+
+    Parameters
+    ----------
+    ctx : discord.ext.commands.Context
+        context of the command
+    ticker : string
+        stock ticker (ex. AAPL, MSFT, TSLA, ^DJI, BTCUSDT)
+
+    """
+
+    # for indexes 'stocks' needs to be 'index'
+    quote, decimal_format = await get_finnhub_quote(ticker.upper(), finnhub_client)
+    if quote['t'] == 0:
+        embed=discord.Embed(description='Invalid Ticker!', color=discord.Color.dark_red())
+        return 'not ok', embed
+    current_price = quote["c"]
+    price_change = current_price - quote["pc"]
+    percent_change = ((current_price / quote["pc"])-1) * 100
+    
+    ccp, cpc, cpercentc, color = await get_string_change(current_price, price_change, percent_change, decimal_format)
+
+    
+    embedded_message = discord.Embed(
+        # format with appropriate ','
+        description=ticker.upper() + " Price: " + ccp + " USD\nPrice Change: " + cpc + " (" + cpercentc + ")", 
+        color=color
+        )
+    live_addition = 'LIVE a' if is_live else 'A'
+    embedded_message.set_footer(text=live_addition + 's of ' + str(time.ctime(time.time())) + ' EST')
+    embed=embedded_message
+    return 'ok', embed
 
 
 
-def get_string_change(current_price, price_change, percent_change, decimal_format):
+async def get_string_change(current_price, price_change, percent_change, decimal_format):
     """Helper function to get the +/- sign of the
     price and percent change along with the color
 
@@ -50,42 +119,7 @@ def get_string_change(current_price, price_change, percent_change, decimal_forma
     cpercentc = sign + '{:,.2f}'.format(percent_change) + '%'
     return ccp, cpc, cpercentc, color
 
-
-async def stock_price_today(ctx, ticker):
-    """Called by stocK_price() in bot.py, returns
-    the current price, percent change, and price
-    change for the specified ticker
-
-    Parameters
-    ----------
-    ctx : discord.ext.commands.Context
-        context of the command
-    ticker : string
-        stock ticker (ex. AAPL, MSFT, TSLA, ^DJI, BTCUSDT)
-
-    """
-
-    # for indexes 'stocks' needs to be 'index'
-    quote, decimal_format = get_quote(ticker.upper())
-    if quote['t'] == 0:
-        await ctx.send(embed=discord.Embed(description='Invalid Ticker!', color=discord.Color.dark_red()))
-        return
-    current_price = quote["c"]
-    price_change = current_price - quote["pc"]
-    percent_change = ((current_price / quote["pc"])-1) * 100
-    
-    ccp, cpc, cpercentc, color = get_string_change(current_price, price_change, percent_change, decimal_format)
-
-    
-    embedded_message = discord.Embed(
-        # format with appropriate ','
-        description=ticker.upper() + " Price: " + ccp + " USD\nPrice Change: " + cpc + " (" + cpercentc + ")", 
-        color=color
-        )
-    embedded_message.set_footer(text='As of ' + str(time.ctime(time.time())))
-    await ctx.send(embed=embedded_message)
-
-def get_quote(ticker):
+async def get_finnhub_quote(ticker, client):
     """Gets the quote for the specified ticker, 
     the quote includes the open price (o), 
     high price (h), low price (l), current price (c), 
@@ -105,20 +139,20 @@ def get_quote(ticker):
 
     """
 
-    quote = finnhub_client.quote(symbol=ticker)
+    quote = client.quote(symbol=ticker)
     if quote['t'] != 0:
         return quote, '{:,.2f}'
-    quote = finnhub_client.quote(symbol='BINANCE:' + ticker)
+    quote = client.quote(symbol='BINANCE:' + ticker)
     if quote['t'] != 0:
         return quote, '{:,.5f}'
-    quote = finnhub_client.quote(symbol='COINBASE:' + ticker)
+    quote = client.quote(symbol='COINBASE:' + ticker)
     if quote['t'] != 0:
         return quote, '{:,.5f}'
     
     # Iterate through remaining exchanges
-    crypto_exchanges = finnhub_client.crypto_exchange()
-    for exchange in crypto_exchanges:
-        quote = finnhub_client.quote(symbol=exchange + ':' + ticker)
+    crypto_exchanges = client.crypto_exchange()
+    for exchange in [i for i in crypto_exchanges if i not in ['Binance', 'COINBASE']]:
+        quote = client.quote(symbol=exchange + ':' + ticker)
         if quote['t'] != 0:
             return quote, '{:,.5f}'
     

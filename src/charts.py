@@ -11,10 +11,10 @@ import mplfinance
 import stocks
 import pandas as pd
 
-FINNHUB_API_TOKEN_2 = os.environ.get('FINNHUB_API_TOKEN_2')
-FINNHUB_API_TOKEN_3 = os.environ.get('FINNHUB_API_TOKEN_3')
-finnhub_chart_client = Finnhub.Client(api_key=FINNHUB_API_TOKEN_2)
-finnhub_other_crypto_client = Finnhub.Client(api_key=FINNHUB_API_TOKEN_3)
+FINNHUB_CHART_API_TOKEN_2 = os.environ.get('FINNHUB_API_TOKEN_2')
+FINNHUB_CRYPTO_API_TOKEN_3 = os.environ.get('FINNHUB_API_TOKEN_3')
+finnhub_chart_client = Finnhub.Client(api_key=FINNHUB_CHART_API_TOKEN_2)
+finnhub_other_crypto_client = Finnhub.Client(api_key=FINNHUB_CRYPTO_API_TOKEN_3)
 
 
 async def chart(ctx, ticker, timeframe, chart_type):
@@ -35,7 +35,7 @@ async def chart(ctx, ticker, timeframe, chart_type):
 
     timeframe = timeframe.upper()
     ticker = ticker.upper()
-    quote, dec = stocks.get_quote(ticker)
+    quote, dec = await stocks.get_finnhub_quote(ticker, finnhub_other_crypto_client)
     current_price = quote['c']
 
     try:
@@ -63,7 +63,7 @@ async def chart(ctx, ticker, timeframe, chart_type):
         await ctx.send(embed=discord.Embed(description='Invalid ticker', color=discord.Color.dark_red()))
         return
 
-    crop_chart(filename, company_name + ', ' + timeframe, ticker + ', ' + timeframe, start_price, current_price, ) 
+    await crop_chart(filename, company_name + ', ' + timeframe, ticker + ', ' + timeframe, start_price, current_price, ) 
 
     # send file to the calling channel
     await ctx.send(file=discord.File(filename))
@@ -164,7 +164,7 @@ def get_num_days(timeframe):
         num_days = -1
     return num_days
 
-def crop_chart(filename, title, alt_title, start_price, current_price):
+async def crop_chart(filename, title, alt_title, start_price, current_price):
     """Crops the chart and adds the enlarged title, current price,
     price change and percent change
 
@@ -185,7 +185,7 @@ def crop_chart(filename, title, alt_title, start_price, current_price):
     font = ImageFont.truetype('fonts/timesbd.ttf', size=30)
     price_change = current_price - start_price
     percent_change = ((current_price / start_price)-1) * 100
-    ccp, cpc, cpercentc, color = stocks.get_string_change(current_price, price_change, percent_change, '{:,.2f}')
+    ccp, cpc, cpercentc, color = await stocks.get_string_change(current_price, price_change, percent_change, '{:,.2f}')
 
     color = '#00ff00' if color == discord.Color.green() else '#ed2121'
 
@@ -359,7 +359,7 @@ def candlestick(ticker, days, quote):
     days : int
         number of days of data to fetch
     quote : dictionary
-        quote for the ticker - for more info see get_quote()
+        quote for the ticker - for more info see get_finnhub_quote()
 
     Returns
     -------
@@ -413,7 +413,7 @@ def line(ticker, days, quote):
     days : int
         number of days of data to fetch
     quote : dictionary
-        quote for the ticker - for more info see get_quote()
+        quote for the ticker - for more info see get_finnhub_quote()
 
     Returns
     -------
@@ -515,13 +515,10 @@ def get_candle_data(ticker, res, days):
     today = datetime.datetime.now()
     from_time = get_from_time(days)
     current_time = int(datetime.datetime.now().timestamp())
-    print(from_time)
-    print(current_time)
     candle = finnhub_chart_client.stock_candle(symbol=ticker, resolution=res, **{'from':str(from_time), 'to': str(current_time)})
     status = candle['s']
     is_not_crypto = True
     if status != 'ok':
-        print('not stock')
         if days == 1:
             prev = today-datetime.timedelta(days=1)
             from_time = int(prev.timestamp())
