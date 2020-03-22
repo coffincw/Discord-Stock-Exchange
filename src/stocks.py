@@ -13,23 +13,35 @@ finnhub_rs_client = Finnhub.Client(api_key=FINNHUB_RS_API_TOKEN)
 
 
 async def rs(ctx, ticker):
-    iterations = 0
-    status, embed = await stock_price_today(ctx, ticker)
-    if status != 'ok':
-            return
-    message = await ctx.send(embed=embed)
-    print(message.id)
+    """Sends the stock_price_today() embedded 
+    message and updates it every minute for 5
+    minutes.
 
+    Parameters
+    ----------
+    ctx : discord.ext.commands.Context
+        context of the command
+    ticker : string
+        stock ticker (ex. AAPL, MSFT, TSLA, ^DJI, BTCUSDT)
+
+    """
+    status, embed = await stock_price_today(ctx, ticker, True)
+    message = await ctx.send(embed=embed)
+    if status != 'ok': # if not okay then don't edit
+            return
+    
+    iterations = 0
     while iterations < 5:
-        print(message.id)
         await asyncio.sleep(60)
-        status, embed = await stock_price_today(ctx, ticker)
+        if iterations == 4: # last iteration
+            status, embed = await stock_price_today(ctx, ticker, False)
+        else:
+            status, embed = await stock_price_today(ctx, ticker, True)
         await message.edit(embed=embed)
-        print('updated')
         
         iterations += 1
 
-async def stock_price_today(ctx, ticker):
+async def stock_price_today(ctx, ticker, is_live):
     """Called by stocK_price() in bot.py, returns
     the current price, percent change, and price
     change for the specified ticker
@@ -60,7 +72,8 @@ async def stock_price_today(ctx, ticker):
         description=ticker.upper() + " Price: " + ccp + " USD\nPrice Change: " + cpc + " (" + cpercentc + ")", 
         color=color
         )
-    embedded_message.set_footer(text='As of ' + str(time.ctime(time.time())))
+    live_addition = 'LIVE a' if is_live else 'A'
+    embedded_message.set_footer(text=live_addition + 's of ' + str(time.ctime(time.time())) + ' EST')
     embed=embedded_message
     return 'ok', embed
 

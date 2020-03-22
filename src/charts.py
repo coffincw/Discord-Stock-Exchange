@@ -515,13 +515,10 @@ def get_candle_data(ticker, res, days):
     today = datetime.datetime.now()
     from_time = get_from_time(days)
     current_time = int(datetime.datetime.now().timestamp())
-    print(from_time)
-    print(current_time)
     candle = finnhub_chart_client.stock_candle(symbol=ticker, resolution=res, **{'from':str(from_time), 'to': str(current_time)})
     status = candle['s']
     is_not_crypto = True
     if status != 'ok':
-        print('not stock')
         if days == 1:
             prev = today-datetime.timedelta(days=1)
             from_time = int(prev.timestamp())
