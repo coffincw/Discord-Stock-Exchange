@@ -28,8 +28,6 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-
-#101440
     
 @client.event
 async def on_message(message):
@@ -98,6 +96,16 @@ async def realtimestock(ctx, *args):
         await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %rs ticker", color=discord.Color.red()))
         return
     await stocks.rs(ctx, args[0])
+
+@client.command(name='losers')
+async def losers(ctx):
+    await stocks.movers(ctx, False)
+
+@client.command(name='gainers')
+async def gainers(ctx):
+    await stocks.movers(ctx, True)
+
+
 
 
 client.run(BOT_TOKEN)

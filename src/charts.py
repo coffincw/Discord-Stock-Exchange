@@ -127,10 +127,10 @@ def get_num_days(timeframe):
         number of days in the timeframe
     """
 
-    d = re.compile('\d+[D]')
-    m = re.compile('\d+[M]')
-    w = re.compile('\d+[W]')
-    y = re.compile('\d+[Y]')
+    d = re.compile(r'\d+[D]')
+    m = re.compile(r'\d+[M]')
+    w = re.compile(r'\d+[W]')
+    y = re.compile(r'\d+[Y]')
 
 
     # set num days based on timeframe
