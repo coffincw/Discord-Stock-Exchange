@@ -77,6 +77,26 @@ async def stock_price_today(ctx, ticker, is_live):
     embed=embedded_message
     return 'ok', embed
 
+async def movers(ctx, is_gainers):
+    if is_gainers:
+        title = 'Top Stock Gainers Today'
+        color = discord.Color.green()
+        movers_data = requests.get('https://financialmodelingprep.com/api/v3/stock/gainers').json()['mostGainerStock']
+    else:
+        title = 'Top Stock Losers Today'
+        color = discord.Color.red()
+        movers_data = requests.get('https://financialmodelingprep.com/api/v3/stock/losers').json()['mostLoserStock']
+
+    embed = discord.Embed(title=title, color=color)
+
+    num = 1
+    for stock in movers_data:
+        text = 'Price: ' + str(stock['price']) + '\nChange: ' + str(stock['changes'] + '\nPercent Change: ' + stock[''].strip(['(', ')']))
+        embed.add_field(name = str(num) + '. ' + stock['companyName'] + ' (' + stock['ticker'] + ')', value=text, inline=True)
+        num += 1
+    
+    await ctx.send(embed=embed)
+
 
 
 async def get_string_change(current_price, price_change, percent_change, decimal_format):
