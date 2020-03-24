@@ -11,6 +11,10 @@ Virtual stock exchange bot to use virtual currency in the real world market
     - Display stock price, price change, percent change
 - rs [ticker]
     - Displays the stock price, price change, percent change in real time (updates every minute for 5 minutes)
+- gainers
+    - Displays the top 10 stock gainers of the day
+- losers
+    - Displays the top 10 stock losers of the day
 - stockcandle [ticker timeframe]
     - Displays the stock's candle data over specified timeframe.  
       - Possible timeframes (multiples can be specified ex. 5D): D, W, M, Y, MAX

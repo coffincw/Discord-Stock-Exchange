@@ -91,8 +91,8 @@ async def movers(ctx, is_gainers):
 
     num = 1
     for stock in movers_data:
-        text = 'Price: ' + str(stock['price']) + '\nChange: ' + str(stock['changes'] + '\nPercent Change: ' + stock[''].strip(['(', ')']))
-        embed.add_field(name = str(num) + '. ' + stock['companyName'] + ' (' + stock['ticker'] + ')', value=text, inline=True)
+        text = 'Price: ' + str(stock['price']) + '\nChange: ' + str(stock['changes']) + '\nPercent Change: ' + stock['changesPercentage'].strip('(').strip(')')
+        embed.add_field(name = str(num) + '. ' + stock['companyName'] + ' (' + stock['ticker'] + ')', value=text, inline=False)
         num += 1
     
     await ctx.send(embed=embed)
