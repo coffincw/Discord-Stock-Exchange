@@ -97,7 +97,18 @@ async def movers(ctx, is_gainers):
     
     await ctx.send(embed=embed)
 
+async def secp(ctx):
+    sec_data = requests.get('https://financialmodelingprep.com/api/v3/stock/sectors-performance').json()['sectorPerformance']
+    title = 'Sector Performance Today'
+    color = discord.Color.blue()
+    embed = discord.Embed(title=title, color=color)
+    for block in sec_data:
+        if block['sector'] == 'Communication Services':
+            embed.add_field(name='Communication', value=block['changesPercentage'])
+        else:
+            embed.add_field(name=block['sector'], value=block['changesPercentage'])
 
+    await ctx.send(embed=embed)
 
 async def get_string_change(current_price, price_change, percent_change, decimal_format):
     """Helper function to get the +/- sign of the
