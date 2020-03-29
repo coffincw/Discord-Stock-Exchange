@@ -81,6 +81,22 @@ async def stock_line(ctx, *args):
 
     await charts.chart(ctx, args[0], args[1], 'line')
 
+@client.command(name='stockrenko')
+async def stock_renko(ctx, *args):
+    if len(args) < 2:
+        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %stockrenko ticker timeframe", color=discord.Color.red()))
+        return
+
+    await charts.chart(ctx, args[0], args[1], 'renko')
+
+@client.command(name='stockpf')
+async def stock_pf(ctx, *args):
+    if len(args) < 2:
+        await ctx.channel.send(embed=discord.Embed(description="Invalid command format.\nDo: %stockpf ticker timeframe", color=discord.Color.red()))
+        return
+
+    await charts.chart(ctx, args[0], args[1], 'pf')
+
 @client.command(name='stock')
 async def stock_price(ctx, *args):
     if len(args) < 1:
