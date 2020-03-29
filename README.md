@@ -21,6 +21,12 @@ Virtual stock exchange bot to use virtual currency in the real world market
 - stockline [ticker timeframe]
     - Displays the stock\'s data in a line graph over specified timeframe.
       - Possible timeframes (multiples can be specified ex. 5D): D, W, M, Y, MAX
+- stockrenko [ticker timeframe]
+    - Displays the stock\'s data in a renko chart over specified timeframe.
+      - Possible timeframes (multiples can be specified ex. 5D): D, W, M, Y, MAX
+- stockpf [ticker timeframe]
+    - Displays the stock\'s data in a Point & Figure plot over specified timeframe.
+      - Possible timeframes (multiples can be specified ex. 5D): D, W, M, Y, MAX
 
 
 ## How to contribute
