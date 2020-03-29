@@ -105,6 +105,10 @@ async def losers(ctx):
 async def gainers(ctx):
     await stocks.movers(ctx, True)
 
+@client.command(name='secp')
+async def sector_performance(ctx):
+    await stocks.secp(ctx)
+
 
 
 
