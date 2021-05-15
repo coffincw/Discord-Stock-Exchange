@@ -58,6 +58,10 @@ async def chart(ctx, ticker, timeframe, chart_type):
         filename, start_price = candlestick(ticker, num_days, quote)
     elif chart_type == 'line':
         filename, start_price = line(ticker, num_days, quote)
+    elif chart_type == 'renko':
+        filename, start_price = price_movement('renko', ticker, num_days, quote)
+    elif chart_type == 'pf':
+        filename, start_price = price_movement('pf', ticker, num_days, quote)
     
     if start_price == -1:
         await ctx.send(embed=discord.Embed(description='Invalid ticker', color=discord.Color.dark_red()))
@@ -455,6 +459,46 @@ def line(ticker, days, quote):
     filename = ticker.upper() + '-line.png'
     save = dict(fname=filename, dpi = 100, pad_inches=0.25)
     mplfinance.plot(df, addplot=guide_lines, **kwargs, linecolor='#ed2121' if start_price > quote['c'] else '#00ff00', style=s, savefig=save)
+
+    return filename, start_price
+
+def price_movement(type, ticker, days, quote):
+    """Creates a line plot
+
+    Parameters
+    ----------
+    ticker : string
+        stock ticker (ex. AAPL, MSFT, TSLA, ^DJI, BTCUSDT)
+    days : int
+        number of days of data to fetch
+    quote : dictionary
+        quote for the ticker - for more info see get_finnhub_quote()
+
+    Returns
+    -------
+    filename : string
+        name of the image file created by mpl.plot()
+    pc : float
+        previous close share price
+    """
+
+    df, dates, create_vert_line, start_price = create_dataframe(ticker, days, 1, quote['pc'])
+    if quote['t'] == 0: #invalid ticker
+        return '', -1
+
+    # define kwargs
+    kwargs = dict(type=type, ylabel='Share Price',volume = True, figratio=(10,8))
+
+    # Create my own `marketcolors` to use with the `nightclouds` style:
+    mc = mplfinance.make_marketcolors(up='#00ff00',down='#ed2121', inherit=True)
+    
+    # Create a new style based on `nightclouds` but with my own `marketcolors`:
+    s  = mplfinance.make_mpf_style(base_mpf_style = 'nightclouds',marketcolors = mc) 
+
+    # Plot the candlestick chart and save to ticker-chart.png
+    filename = ticker.upper() + '-line.png'
+    save = dict(fname=filename, dpi = 100, pad_inches=0.25)
+    mplfinance.plot(df, **kwargs, style=s, savefig=save)
 
     return filename, start_price
 
